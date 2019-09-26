@@ -253,6 +253,8 @@ RCT_EXPORT_METHOD(getPhotos:(NSDictionary *)params
   BOOL __block stopCollections_;
   NSString __block *currentCollectionName;
 
+  
+ 
   requestPhotoLibraryAccess(reject, ^{
     void (^collectAsset)(PHAsset*, NSUInteger, BOOL*) = ^(PHAsset * _Nonnull asset, NSUInteger assetIdx, BOOL * _Nonnull stopAssets) {
       NSString *const uri = [NSString stringWithFormat:@"ph://%@", [asset localIdentifier]];
@@ -298,6 +300,30 @@ RCT_EXPORT_METHOD(getPhotos:(NSDictionary *)params
         return;
       }
 
+      __block NSURL *filePath = nil;
+
+      if (asset.mediaType == PHAssetMediaTypeImage) {
+        PHImageRequestOptions *requestOptions = [[PHImageRequestOptions alloc] init];
+        requestOptions.resizeMode   = PHImageRequestOptionsResizeModeFast;
+        requestOptions.deliveryMode = PHImageRequestOptionsDeliveryModeFastFormat;
+        requestOptions.synchronous = true;
+        
+        void (^handleImage)(UIImage *image, NSDictionary *info) = ^(UIImage *image, NSDictionary *info){
+          if (image != nil) {
+             filePath = [info valueForKeyPath:@"PHImageFileURLKey"];
+          }
+        };
+        
+        [[PHImageManager defaultManager] requestImageForAsset:asset
+                         targetSize:PHImageManagerMaximumSize
+                        contentMode:PHImageContentModeDefault
+                            options:requestOptions
+                      resultHandler:handleImage];
+      
+      }
+
+
+        
       NSString *const assetMediaTypeLabel = (asset.mediaType == PHAssetMediaTypeVideo
                                             ? @"video"
                                             : (asset.mediaType == PHAssetMediaTypeImage
@@ -320,8 +346,9 @@ RCT_EXPORT_METHOD(getPhotos:(NSDictionary *)params
           @"type": assetMediaTypeLabel, // TODO: switch to mimeType?
           @"group_name": currentCollectionName,
           @"image": @{
-              @"uri": uri,
+              @"uri": (filePath ? filePath.path : nil),
               @"filename": origFilename,
+              @"assetUri": uri,
               @"height": @([asset pixelHeight]),
               @"width": @([asset pixelWidth]),
               @"isStored": @YES, // this field doesn't seem to exist on android

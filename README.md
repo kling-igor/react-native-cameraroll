@@ -151,8 +151,9 @@ Returns a Promise which when resolved will be of the following shape:
     * `type`: {string}
     * `group_name`: {string}
     * `image`: {object} : An object with the following shape:
-      * `uri`: {string}
+      * `uri`: {string} - this is raw path, in iOS /var/mobile/Media/DCIM/100APPLE/...
       * `filename`: {string}
+      * `assetUri`: {string} - this is 'uri' value of original implementation
       * `height`: {number}
       * `width`: {number}
       * `isStored`: {boolean}
