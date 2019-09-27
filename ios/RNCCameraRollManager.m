@@ -346,7 +346,7 @@ RCT_EXPORT_METHOD(getPhotos:(NSDictionary *)params
           @"type": assetMediaTypeLabel, // TODO: switch to mimeType?
           @"group_name": currentCollectionName,
           @"image": @{
-              @"uri": (filePath ? filePath.path : nil),
+              @"uri": (filePath ? filePath.path : @""),
               @"filename": origFilename,
               @"assetUri": uri,
               @"height": @([asset pixelHeight]),
